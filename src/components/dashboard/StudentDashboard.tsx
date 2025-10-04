@@ -1,7 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { User } from '@/types/user';
 import { FileBrowser } from '@/components/student/FileBrowser';
+import { ActivityBrowser } from '@/components/student/ActivityBrowser';
+import { getUpcomingActivities } from '@/lib/activities';
 
 interface StudentDashboardProps {
   user: User;
@@ -10,6 +13,19 @@ interface StudentDashboardProps {
 }
 
 export function StudentDashboard({ user, activeView, onViewChange }: StudentDashboardProps) {
+  const [upcomingCount, setUpcomingCount] = useState(0);
+
+  useEffect(() => {
+    const loadActivityCount = async () => {
+      try {
+        const activities = await getUpcomingActivities();
+        setUpcomingCount(activities.length);
+      } catch (error) {
+        console.error('Error loading activity count:', error);
+      }
+    };
+    loadActivityCount();
+  }, []);
   // Navigation tabs for student dashboard
   const navTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home' },
@@ -86,7 +102,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Upcoming Activities</p>
-                <p className="text-2xl font-semibold text-gray-900">3</p>
+                <p className="text-2xl font-semibold text-gray-900">{upcomingCount}</p>
               </div>
             </div>
           </div>
@@ -166,38 +182,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
       )}
 
       {activeView === 'activities' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Upcoming Activities</h3>
-          <div className="space-y-4">
-            <div className="border-l-4 border-green-500 bg-green-50 p-4 rounded">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium text-gray-900">Weekly Drill Practice</h4>
-                  <p className="text-sm text-gray-600 mt-1">Main field • 2:00 PM - 4:00 PM</p>
-                </div>
-                <span className="text-sm text-green-700 font-medium">Today</span>
-              </div>
-            </div>
-            <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium text-gray-900">APM Assessment</h4>
-                  <p className="text-sm text-gray-600 mt-1">Training room • 10:00 AM - 12:00 PM</p>
-                </div>
-                <span className="text-sm text-blue-700 font-medium">Tomorrow</span>
-              </div>
-            </div>
-            <div className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium text-gray-900">Monthly Training</h4>
-                  <p className="text-sm text-gray-600 mt-1">Assembly hall • 8:00 AM - 5:00 PM</p>
-                </div>
-                <span className="text-sm text-purple-700 font-medium">Next Week</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ActivityBrowser />
       )}
 
       {activeView === 'progress' && (

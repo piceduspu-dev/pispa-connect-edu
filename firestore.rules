@@ -12,7 +12,7 @@ service cloud.firestore {
         && request.auth.uid == userId;
 
       // Admin can read/write all users
-      allow read, write: if isAdmin();
+      allow read, write: if isUserInRole('admin');
     }
 
     // Allow querying users collection for validation
@@ -31,20 +31,20 @@ service cloud.firestore {
     // Activities collection - events and training sessions
     match /activities/{activityId} {
       allow read: if true; // Public read access
-      allow create: if request.auth != null && isAdmin();
-      allow update, delete: if isAdmin();
+      allow create: if request.auth != null && userExists();
+      allow update, delete: if userExists();
     }
 
     // Programmes collection - academic programmes
     match /programmes/{programmeId} {
       allow read: if true; // Public read access
-      allow write: if request.auth != null && isAdmin();
+      allow write: if isUserInRole('admin');
     }
 
     // Config collection - system configuration
     match /config/{document} {
       allow read: if request.auth != null;
-      allow write: if isAdmin();
+      allow write: if isUserInRole('admin');
     }
 
     // Deny access to all other paths
@@ -53,9 +53,22 @@ service cloud.firestore {
     }
   }
 
-  // Helper function to check if user is admin
+  // Helper function to check if user is admin (from custom claims)
   function isAdmin() {
     return request.auth != null &&
            request.auth.token.role == 'admin';
+  }
+
+  // Helper function to check user role from Firestore document
+  function isUserInRole(role) {
+    return request.auth != null &&
+           exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+  }
+
+  // Debug function to check if user document exists
+  function userExists() {
+    return request.auth != null &&
+           exists(/databases/$(database)/documents/users/$(request.auth.uid));
   }
 }
