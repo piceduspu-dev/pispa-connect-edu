@@ -6,8 +6,15 @@ import {
   deleteActivity,
   toggleActivityStatus
 } from '@/lib/activities';
+import {
+  getRegistrationsByActivity,
+  markAttendance,
+  type ActivityRegistration
+} from '@/lib/registrations';
 import { type Activity, type ActivityType } from '@/types/activities';
 import { format } from 'date-fns';
+import { getDoc, doc } from 'firebase/firestore';
+import { getDb } from '@/lib/firebase';
 
 interface ActivityListProps {
   refreshTrigger?: number;
@@ -23,6 +30,11 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
   const [toggling, setToggling] = useState<string | null>(null);
   const [filter, setFilter] = useState<ActivityType | 'all'>('all');
   const [showInactive, setShowInactive] = useState(false);
+  const [registrations, setRegistrations] = useState<Record<string, ActivityRegistration[]>>({});
+  const [expandedActivities, setExpandedActivities] = useState<Record<string, boolean>>({});
+  const [markingAttendance, setMarkingAttendance] = useState<string | null>(null);
+  const [studentInfo, setStudentInfo] = useState<Record<string, { email: string; displayName?: string }>>({});
+  const [userInfo, setUserInfo] = useState<Record<string, { email: string; displayName?: string }>>({});
 
   useEffect(() => {
     loadActivities();
@@ -41,11 +53,147 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
 
       const result = await getActivities(filters);
       setActivities(result.activities);
+
+      // Load user info for activity creators
+      await loadActivityCreatorsInfo(result.activities);
+
+      // Load registrations for each activity
+      await loadRegistrationsForActivities(result.activities);
     } catch (error) {
       console.error('Error loading activities:', error);
       setError('Failed to load activities');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRegistrationsForActivities = async (activitiesToLoad: Activity[]) => {
+    const registrationsData: Record<string, ActivityRegistration[]> = {};
+    const studentIds = new Set<string>();
+
+    for (const activity of activitiesToLoad) {
+      try {
+        const activityRegistrations = await getRegistrationsByActivity(activity.activityId);
+        registrationsData[activity.activityId] = activityRegistrations;
+
+        // Collect all unique student IDs
+        activityRegistrations.forEach(reg => studentIds.add(reg.studentId));
+      } catch (error) {
+        console.error(`Error loading registrations for ${activity.activityId}:`, error);
+        registrationsData[activity.activityId] = [];
+      }
+    }
+
+    setRegistrations(registrationsData);
+
+    // Load student information for all registered students
+    await loadStudentInfo(Array.from(studentIds));
+  };
+
+  const loadStudentInfo = async (studentIds: string[]) => {
+    const db = getDb();
+    const studentData: Record<string, { email: string; displayName?: string }> = {};
+
+    for (const studentId of studentIds) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', studentId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          studentData[studentId] = {
+            email: userData.email || 'Unknown Email',
+            displayName: userData.displayName
+          };
+        } else {
+          studentData[studentId] = {
+            email: 'Unknown User',
+            displayName: 'Unknown'
+          };
+        }
+      } catch (error) {
+        console.error(`Error loading student info for ${studentId}:`, error);
+        studentData[studentId] = {
+          email: 'Error Loading',
+          displayName: 'Error'
+        };
+      }
+    }
+
+    setStudentInfo(studentData);
+  };
+
+  const loadActivityCreatorsInfo = async (activities: Activity[]) => {
+    const db = getDb();
+    const creatorIds = new Set<string>();
+    const userData: Record<string, { email: string; displayName?: string }> = {};
+
+    // Collect all unique creator IDs
+    activities.forEach(activity => {
+      if (activity.createdBy) {
+        creatorIds.add(activity.createdBy);
+      }
+    });
+
+    // Load user information for all creators
+    for (const creatorId of Array.from(creatorIds)) {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', creatorId));
+        if (userDoc.exists()) {
+          const userDataItem = userDoc.data();
+          userData[creatorId] = {
+            email: userDataItem.email || 'Unknown Email',
+            displayName: userDataItem.displayName
+          };
+        } else {
+          userData[creatorId] = {
+            email: 'Unknown User',
+            displayName: 'Unknown'
+          };
+        }
+      } catch (error) {
+        console.error(`Error loading creator info for ${creatorId}:`, error);
+        userData[creatorId] = {
+          email: 'Error Loading',
+          displayName: 'Error'
+        };
+      }
+    }
+
+    setUserInfo(userData);
+  };
+
+  const toggleRegistrations = (activityId: string) => {
+    setExpandedActivities(prev => ({
+      ...prev,
+      [activityId]: !prev[activityId]
+    }));
+  };
+
+  const handleMarkAttendance = async (registrationId: string, attended: boolean) => {
+    setMarkingAttendance(registrationId);
+    setError(null);
+
+    try {
+      await markAttendance(registrationId, attended);
+
+      // Refresh registrations for the activity
+      const activityRegistrations = Object.keys(registrations).find(
+        activityId => registrations[activityId].some(reg => reg.id === registrationId)
+      );
+
+      if (activityRegistrations) {
+        const updatedRegistrations = await getRegistrationsByActivity(activityRegistrations);
+        setRegistrations(prev => ({
+          ...prev,
+          [activityRegistrations]: updatedRegistrations
+        }));
+      }
+
+      setSuccess(`Attendance marked successfully`);
+    } catch (error) {
+      console.error('Error marking attendance:', error);
+      setError('Failed to mark attendance');
+    } finally {
+      setMarkingAttendance(null);
     }
   };
 
@@ -216,8 +364,36 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
 
                     <div className="flex items-center gap-1">
                       <i className="fas fa-user"></i>
-                      <span>Created by: {activity.createdBy}</span>
+                      <span>Created by: {userInfo[activity.createdBy]?.displayName || userInfo[activity.createdBy]?.email || activity.createdBy}</span>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <i className="fas fa-users"></i>
+                      <span>
+                        {registrations[activity.activityId]?.length || 0} registered
+                        {activity.maxParticipants && ` / ${activity.maxParticipants}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Registration Management Button */}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      {registrations[activity.activityId]?.length > 0 ? (
+                        <>
+                          {registrations[activity.activityId]?.filter(r => r.status === 'registered').length} pending
+                          {' • '}
+                          {registrations[activity.activityId]?.filter(r => r.status === 'attended').length} attended
+                        </>
+                      ) : (
+                        'No registrations yet'
+                      )}
+                    </span>
+                    <button
+                      onClick={() => toggleRegistrations(activity.activityId)}
+                      className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 transition-colors"
+                    >
+                      {expandedActivities[activity.activityId] ? 'Hide' : 'View'} Registrations
+                    </button>
                   </div>
                 </div>
 
@@ -263,6 +439,81 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
                   </button>
                 </div>
               </div>
+
+              {/* Registrations List (Expandable) */}
+              {expandedActivities[activity.activityId] && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">Registered Students</h5>
+                  {registrations[activity.activityId]?.length > 0 ? (
+                    <div className="space-y-2">
+                      {registrations[activity.activityId].map((registration) => (
+                        <div key={registration.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                              <i className="fas fa-user text-gray-500 text-sm"></i>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {studentInfo[registration.studentId]?.displayName || studentInfo[registration.studentId]?.email || 'Loading...'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {studentInfo[registration.studentId]?.email || registration.studentId}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Registered: {format(registration.registeredAt.toDate(), 'MMM dd, yyyy')}
+                              </p>
+                              {registration.notes && (
+                                <p className="text-xs text-gray-600 mt-1">Notes: {registration.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              registration.status === 'registered' ? 'bg-blue-100 text-blue-800' :
+                              registration.status === 'attended' ? 'bg-green-100 text-green-800' :
+                              registration.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {registration.status}
+                            </span>
+
+                            {registration.status === 'registered' && (
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  onClick={() => handleMarkAttendance(registration.id, true)}
+                                  disabled={markingAttendance === registration.id}
+                                  className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 transition-colors disabled:opacity-50"
+                                >
+                                  {markingAttendance === registration.id ? (
+                                    <i className="fas fa-spinner fa-spin"></i>
+                                  ) : (
+                                    'Present'
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleMarkAttendance(registration.id, false)}
+                                  disabled={markingAttendance === registration.id}
+                                  className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 transition-colors disabled:opacity-50"
+                                >
+                                  {markingAttendance === registration.id ? (
+                                    <i className="fas fa-spinner fa-spin"></i>
+                                  ) : (
+                                    'Absent'
+                                  )}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      No students registered for this activity yet
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

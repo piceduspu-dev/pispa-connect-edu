@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { ActivityForm } from '@/components/admin/ActivityForm';
 import { ActivityList } from '@/components/admin/ActivityList';
@@ -27,7 +28,16 @@ export default function AdminActivitiesPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Activity Management</h1>
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/admin"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            >
+              <i className="fas fa-arrow-left mr-2"></i>
+              Back to Dashboard
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">Activity Management</h1>
+          </div>
         </div>
 
         {editingActivity ? (

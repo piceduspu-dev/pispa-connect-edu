@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { getUpcomingActivities } from '@/lib/activities';
+import {
+  registerForActivity,
+  cancelRegistration,
+  getStudentRegistrationForActivity,
+  getAvailableActivitySlots,
+  type ActivityRegistration
+} from '@/lib/registrations';
+import { useAuth } from '@/contexts/AuthContext';
 import { type Activity } from '@/types/activities';
 import { format } from 'date-fns';
 
@@ -11,13 +19,23 @@ interface ActivityBrowserProps {
 }
 
 export function ActivityBrowser({ title = "Upcoming Activities", description = "View upcoming PISPA activities, training sessions, and events" }: ActivityBrowserProps) {
+  const { user } = useAuth();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [registrationStatuses, setRegistrationStatuses] = useState<Record<string, ActivityRegistration | null>>({});
+  const [availableSlots, setAvailableSlots] = useState<Record<string, { available: number; total: number; registered: number }>>({});
+  const [processing, setProcessing] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadActivities();
   }, []);
+
+  useEffect(() => {
+    if (activities.length > 0 && user) {
+      loadRegistrationData();
+    }
+  }, [activities, user]);
 
   const loadActivities = async () => {
     try {
@@ -30,6 +48,79 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
       setError('Failed to load activities');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRegistrationData = async () => {
+    if (!user) return;
+
+    const statuses: Record<string, ActivityRegistration | null> = {};
+    const slots: Record<string, { available: number; total: number; registered: number }> = {};
+
+    for (const activity of activities) {
+      try {
+        // Check if user is registered
+        const registration = await getStudentRegistrationForActivity(activity.activityId, user.userId);
+        statuses[activity.activityId] = registration;
+
+        // Get available slots
+        const available = await getAvailableActivitySlots(activity.activityId);
+        slots[activity.activityId] = available;
+      } catch (error) {
+        console.error(`Error loading registration data for ${activity.activityId}:`, error);
+        statuses[activity.activityId] = null;
+        slots[activity.activityId] = { available: 0, total: 0, registered: 0 };
+      }
+    }
+
+    setRegistrationStatuses(statuses);
+    setAvailableSlots(slots);
+  };
+
+  const handleRegister = async (activityId: string) => {
+    if (!user) return;
+
+    setProcessing(prev => ({ ...prev, [activityId]: true }));
+    setError(null);
+
+    try {
+      await registerForActivity(activityId, user.userId);
+
+      // Refresh registration data
+      await loadRegistrationData();
+
+      // Refresh activities to update counts
+      await loadActivities();
+    } catch (error) {
+      console.error('Error registering for activity:', error);
+      setError('Failed to register for activity. Please try again.');
+    } finally {
+      setProcessing(prev => ({ ...prev, [activityId]: false }));
+    }
+  };
+
+  const handleCancelRegistration = async (activityId: string) => {
+    if (!user) return;
+
+    const registration = registrationStatuses[activityId];
+    if (!registration) return;
+
+    setProcessing(prev => ({ ...prev, [activityId]: true }));
+    setError(null);
+
+    try {
+      await cancelRegistration(registration.id);
+
+      // Refresh registration data
+      await loadRegistrationData();
+
+      // Refresh activities to update counts
+      await loadActivities();
+    } catch (error) {
+      console.error('Error cancelling registration:', error);
+      setError('Failed to cancel registration. Please try again.');
+    } finally {
+      setProcessing(prev => ({ ...prev, [activityId]: false }));
     }
   };
 
@@ -150,7 +241,7 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
-                      <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                      <div className="flex flex-wrap gap-4 text-xs text-gray-500 mb-3">
                         {activity.location && (
                           <div className="flex items-center gap-1">
                             <i className="fas fa-map-marker-alt"></i>
@@ -165,7 +256,67 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
                           <i className="fas fa-clock"></i>
                           <span>{format(activityDate, 'h:mm a')}</span>
                         </div>
+                        {availableSlots[activity.activityId] && (
+                          <div className="flex items-center gap-1">
+                            <i className="fas fa-users"></i>
+                            <span>
+                              {availableSlots[activity.activityId].registered}
+                              {availableSlots[activity.activityId].total !== 999 &&
+                                `/${availableSlots[activity.activityId].total}`
+                              }
+                            </span>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Registration Section */}
+                      {user && (
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs">
+                            {registrationStatuses[activity.activityId] ? (
+                              <span className="text-green-600 font-medium flex items-center gap-1">
+                                <i className="fas fa-check-circle"></i>
+                                Registered
+                              </span>
+                            ) : availableSlots[activity.activityId]?.available > 0 ? (
+                              <span className="text-blue-600">Open for registration</span>
+                            ) : (
+                              <span className="text-red-600">Full</span>
+                            )}
+                          </div>
+
+                          {registrationStatuses[activity.activityId] ? (
+                            <button
+                              onClick={() => handleCancelRegistration(activity.activityId)}
+                              disabled={processing[activity.activityId]}
+                              className="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {processing[activity.activityId] ? (
+                                <i className="fas fa-spinner fa-spin"></i>
+                              ) : (
+                                'Cancel'
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleRegister(activity.activityId)}
+                              disabled={
+                                processing[activity.activityId] ||
+                                availableSlots[activity.activityId]?.available === 0
+                              }
+                              className="text-xs bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {processing[activity.activityId] ? (
+                                <i className="fas fa-spinner fa-spin"></i>
+                              ) : availableSlots[activity.activityId]?.available === 0 ? (
+                                'Full'
+                              ) : (
+                                'Register'
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2 ml-4">

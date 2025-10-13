@@ -18,6 +18,8 @@ export interface Activity {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   isActive: boolean;
+  registeredCount?: number;       // Current registration count
+  maxParticipants?: number;       // Optional capacity limit
 }
 
 // Activity creation data

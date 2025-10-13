@@ -325,3 +325,77 @@ export async function searchActivities(searchQuery: string): Promise<Activity[]>
     (activity.location && activity.location.toLowerCase().includes(searchLower))
   );
 }
+
+/**
+ * Get activities with registration counts
+ */
+export async function getActivitiesWithRegistrationCounts(
+  filters?: ActivityFilters,
+  pageSize: number = 50
+): Promise<ActivityQueryResult> {
+  const db = getDb();
+  let q = query(collection(db, 'activities'));
+
+  // Apply filters
+  const constraints: QueryConstraint[] = [];
+
+  if (filters?.activityType) {
+    constraints.push(where('activityType', '==', filters.activityType));
+  }
+
+  if (filters?.createdBy) {
+    constraints.push(where('createdBy', '==', filters.createdBy));
+  }
+
+  if (filters?.isActive !== undefined) {
+    constraints.push(where('isActive', '==', filters.isActive));
+  }
+
+  if (filters?.dateRange) {
+    constraints.push(where('date', '>=', filters.dateRange.start));
+    constraints.push(where('date', '<=', filters.dateRange.end));
+  }
+
+  // Add ordering
+  constraints.push(orderBy('date', 'desc'));
+
+  // Add pagination
+  constraints.push(limit(pageSize));
+
+  q = query(collection(db, 'activities'), ...constraints);
+
+  const querySnapshot = await getDocs(q);
+  const activities = querySnapshot.docs.map(doc => doc.data() as Activity);
+
+  // Initialize all activities with 0 registered count
+  const activitiesWithCounts = activities.map(activity => ({
+    ...activity,
+    registeredCount: 0
+  }));
+
+  // Apply search query filter (client-side)
+  let filteredActivities = activitiesWithCounts;
+  if (filters?.searchQuery) {
+    const searchLower = filters.searchQuery.toLowerCase();
+    filteredActivities = activitiesWithCounts.filter(activity =>
+      activity.title.toLowerCase().includes(searchLower) ||
+      activity.description.toLowerCase().includes(searchLower) ||
+      (activity.location && activity.location.toLowerCase().includes(searchLower))
+    );
+  }
+
+  // Apply location filter (client-side for flexibility)
+  if (filters?.location) {
+    const locationLower = filters.location.toLowerCase();
+    filteredActivities = filteredActivities.filter(activity =>
+      activity.location?.toLowerCase().includes(locationLower)
+    );
+  }
+
+  return {
+    activities: filteredActivities,
+    totalCount: filteredActivities.length,
+    hasNextPage: querySnapshot.docs.length === pageSize,
+    lastVisible: querySnapshot.docs[querySnapshot.docs.length - 1]
+  };
+}

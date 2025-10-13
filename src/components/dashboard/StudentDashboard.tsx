@@ -31,6 +31,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home' },
     { id: 'materials', label: 'Learning Materials', icon: 'fas fa-book' },
     { id: 'activities', label: 'Activities', icon: 'fas fa-calendar' },
+    { id: 'registrations', label: 'My Registrations', icon: 'fas fa-list-check' },
     { id: 'progress', label: 'My Progress', icon: 'fas fa-chart-line' },
   ];
 
@@ -183,6 +184,22 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
 
       {activeView === 'activities' && (
         <ActivityBrowser />
+      )}
+
+      {activeView === 'registrations' && (
+        <div className="text-center py-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">My Registrations</h3>
+            <p className="text-gray-600 mb-4">View and manage your activity registrations</p>
+            <a
+              href="/student/registrations"
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            >
+              <i className="fas fa-arrow-right mr-2"></i>
+              View All Registrations
+            </a>
+          </div>
+        </div>
       )}
 
       {activeView === 'progress' && (
