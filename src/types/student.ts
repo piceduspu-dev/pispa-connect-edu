@@ -21,19 +21,6 @@ export interface Student {
   updatedAt: Timestamp;
 }
 
-// Student creation data
-export interface CreateStudentData {
-  studentId: string;
-  fullName: string;
-  programme: string;
-  semester: number;
-  email: string;
-  phoneNumber?: string;
-  emergencyContact?: string;
-  profilePhotoURL?: string;
-  trainingStatus?: string;
-  enrollmentDate: Timestamp;
-}
 
 // Student update data (partial updates allowed)
 export interface UpdateStudentData {

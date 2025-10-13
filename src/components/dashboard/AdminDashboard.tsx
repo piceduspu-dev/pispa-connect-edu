@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User } from '@/types/user';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { FileList } from '@/components/admin/FileList';
+import { getDashboardStatistics, DashboardStatistics, RecentActivityRegistration } from '@/lib/statistics';
 
 interface AdminDashboardProps {
   user: User;
@@ -24,12 +25,90 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
   // State for file management
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Mock data for dashboard
-  const stats = {
-    totalStudents: 156,
-    activeStudents: 142,
-    totalMaterials: 24,
-    upcomingActivities: 8,
+  // State for dashboard statistics
+  const [stats, setStats] = useState<DashboardStatistics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch dashboard statistics
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log('Fetching dashboard statistics...');
+        const dashboardStats = await getDashboardStatistics();
+
+        setStats(dashboardStats);
+        console.log('Dashboard statistics loaded successfully');
+        console.log('Recent registrations in dashboard:', dashboardStats.recentRegistrations);
+      } catch (err) {
+        console.error('Error fetching dashboard statistics:', err);
+        setError('Failed to load dashboard statistics');
+
+        // Set fallback stats
+        setStats({
+          totalStudents: 0,
+          activeStudents: 0,
+          totalMaterials: 0,
+          upcomingActivities: 0,
+          recentRegistrations: [],
+          systemStatus: {
+            isOperational: false,
+            lastUpdated: new Date()
+          }
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Fetch stats when dashboard view is active
+    if (activeView === 'dashboard') {
+      fetchStats();
+    }
+  }, [activeView, refreshTrigger]);
+
+  // Format relative time for display
+  const formatRelativeTime = (date: Date): string => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  // Get activity type badge color
+  const getActivityTypeBadgeColor = (activityType: string): string => {
+    switch (activityType.toLowerCase()) {
+      case 'training': return 'bg-blue-100 text-blue-800';
+      case 'event': return 'bg-purple-100 text-purple-800';
+      case 'competition': return 'bg-orange-100 text-orange-800';
+      case 'ceremony': return 'bg-pink-100 text-pink-800';
+      case 'workshop': return 'bg-indigo-100 text-indigo-800';
+      case 'meeting': return 'bg-gray-100 text-gray-800';
+      case 'exercise': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Get registration status color
+  const getRegistrationStatusColor = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'registered': return 'bg-green-100 text-green-800';
+      case 'attended': return 'bg-blue-100 text-blue-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'absent': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -47,10 +126,15 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-600">System Status</div>
-            <div className="flex items-center text-green-600">
-              <i className="fas fa-circle text-xs mr-2"></i>
-              All Systems Operational
+            <div className={`flex items-center ${stats?.systemStatus.isOperational ? 'text-green-600' : 'text-red-600'}`}>
+              <i className={`fas fa-circle text-xs mr-2`}></i>
+              {stats?.systemStatus.isOperational ? 'All Systems Operational' : 'System Issues Detected'}
             </div>
+            {stats && (
+              <div className="text-xs text-gray-500 mt-1">
+                Last updated: {formatRelativeTime(stats.systemStatus.lastUpdated)}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -77,146 +161,182 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
 
       {/* Dashboard Content Based on Active View */}
       {activeView === 'dashboard' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Overview Stats */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <i className="fas fa-users text-blue-600"></i>
+        <>
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <i className="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">Error Loading Dashboard</h3>
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+                <button
+                  onClick={() => setRefreshTrigger(prev => prev + 1)}
+                  className="ml-auto text-sm bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="h-6 bg-gray-200 rounded animate-pulse w-16"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Dashboard Stats */}
+          {!loading && stats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Overview Stats */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-users text-blue-600"></i>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Students</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
+                  </div>
                 </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Students</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalStudents}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <i className="fas fa-user-check text-green-600"></i>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-user-check text-green-600"></i>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Active Students</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.activeStudents}</p>
+                  </div>
                 </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Students</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.activeStudents}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <i className="fas fa-book text-purple-600"></i>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-book text-purple-600"></i>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Learning Materials</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.totalMaterials}</p>
+                  </div>
                 </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Learning Materials</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalMaterials}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                  <i className="fas fa-calendar text-orange-600"></i>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-calendar text-orange-600"></i>
+                    </div>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Upcoming Activities</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stats.upcomingActivities}</p>
+                  </div>
                 </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Upcoming Activities</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.upcomingActivities}</p>
+            </div>
+          )}
+
+          {/* Recent Activity Registrations */}
+          {!loading && stats && (
+            <div className="md:col-span-2 lg:col-span-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity Registrations</h3>
+              <div className="overflow-x-auto">
+                {stats.recentRegistrations.length > 0 ? (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {stats.recentRegistrations.map((registration) => (
+                        <tr key={registration.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {registration.studentName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {registration.activityTitle}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getActivityTypeBadgeColor(registration.activityType)}`}>
+                              {registration.activityType}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {formatRelativeTime(registration.registeredAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getRegistrationStatusColor(registration.status)}`}>
+                              {registration.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-center py-8">
+                    <i className="fas fa-calendar-check text-gray-300 text-4xl mb-3"></i>
+                    <p className="text-gray-500">No recent activity registrations found</p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Recent Registrations */}
-          <div className="md:col-span-2 lg:col-span-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Registrations</h3>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Programme</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Ahmad Ibrahim</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">PISPA2024001</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">APM</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">2 hours ago</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Siti Nurhaliza</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">PISPA2024002</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">APM</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1 day ago</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Muhammad Rafi</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">PISPA2024003</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">APM</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">3 days ago</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          )}
 
           {/* Quick Actions */}
-          <div className="md:col-span-2 lg:col-span-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                <i className="fas fa-user-plus mr-2"></i>
-                Add Student
-              </button>
-              <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                <i className="fas fa-plus mr-2"></i>
-                Create Activity
-              </button>
-              <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                <i className="fas fa-upload mr-2"></i>
-                Upload Material
-              </button>
+          {!loading && stats && (
+            <div className="md:col-span-2 lg:col-span-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                  <i className="fas fa-plus mr-2"></i>
+                  Create Activity
+                </button>
+                <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                  <i className="fas fa-upload mr-2"></i>
+                  Upload Material
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
 
       {activeView === 'students' && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex justify-between items-center mb-6">
+          <div className="mb-6">
             <h3 className="text-lg font-medium text-gray-900">Student Management</h3>
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors">
-              <i className="fas fa-plus mr-2"></i>
-              Add New Student
-            </button>
           </div>
 
           <div className="overflow-x-auto">
