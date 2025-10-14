@@ -14,6 +14,7 @@ import {
 } from 'firebase/storage';
 import { doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { getStorageInstance, getDb } from './firebase';
+import { logUserDownload } from './userActivity';
 import type { User } from '@/types/user';
 
 // File type definitions
@@ -29,6 +30,7 @@ export interface FileMetadata {
   storagePath: string;
   description?: string;
   tags?: string[];
+  viewCount?: number;
 }
 
 export type FileCategory = 'learning-materials' | 'drill-guides' | 'activity-files' | 'profile-photos';
@@ -292,11 +294,72 @@ export async function updateFileMetadata(
 }
 
 /**
+ * Increment file view count
+ */
+export async function incrementViewCount(fileId: string): Promise<void> {
+  try {
+    const db = getDb();
+    const docRef = doc(db, 'files', fileId);
+
+    // Get current view count
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const currentCount = docSnap.data().viewCount || 0;
+      await updateDoc(docRef, {
+        viewCount: currentCount + 1,
+        lastViewedAt: serverTimestamp()
+      });
+      console.log(`View count incremented for file ${fileId}: ${currentCount + 1}`);
+    }
+  } catch (error) {
+    console.error('Error incrementing view count:', error);
+    // Don't throw error to avoid breaking user experience
+  }
+}
+
+/**
  * Get download URL for a file
  */
 export async function getFileDownloadURL(fileId: string): Promise<string | null> {
   const metadata = await getFileMetadata(fileId);
   return metadata?.downloadURL || null;
+}
+
+/**
+ * Track and get download URL for a file (logs user download activity)
+ */
+export async function trackFileDownload(
+  fileId: string,
+  user: User
+): Promise<{ downloadURL: string | null; success: boolean }> {
+  try {
+    const metadata = await getFileMetadata(fileId);
+
+    if (!metadata) {
+      console.error('File not found:', fileId);
+      return { downloadURL: null, success: false };
+    }
+
+    // Log the user download activity
+    await logUserDownload(
+      user.userId,
+      user.email,
+      fileId,
+      metadata.name,
+      metadata.name
+    );
+
+    console.log(`User download tracked: ${user.email} downloaded ${metadata.name}`);
+
+    return {
+      downloadURL: metadata.downloadURL,
+      success: true
+    };
+
+  } catch (error) {
+    console.error('Error tracking file download:', error);
+    return { downloadURL: null, success: false };
+  }
 }
 
 /**

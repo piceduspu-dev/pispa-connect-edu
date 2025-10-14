@@ -52,7 +52,9 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
           totalStudents: 0,
           activeStudents: 0,
           totalMaterials: 0,
+          totalViews: 0,
           upcomingActivities: 0,
+          attendanceRate: 0,
           recentRegistrations: [],
           systemStatus: {
             isOperational: false,
@@ -453,10 +455,15 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm text-gray-600">Material Views</span>
-                    <span className="text-sm font-medium">1,234</span>
+                    <span className="text-sm font-medium">{stats?.totalViews || 0}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '85%' }}></div>
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${stats?.totalMaterials && stats.totalMaterials > 0 ? Math.min((stats.totalViews / stats.totalMaterials) * 10, 100) : 0}%`
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -468,10 +475,13 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
                 <div>
                   <div className="flex justify-between mb-1">
                     <span className="text-sm text-gray-600">Attendance Rate</span>
-                    <span className="text-sm font-medium">92%</span>
+                    <span className="text-sm font-medium">{stats?.attendanceRate || 0}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{ width: '92%' }}></div>
+                    <div
+                      className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${stats?.attendanceRate || 0}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>

@@ -124,42 +124,65 @@ export async function getRegistrationsByActivity(
 export async function getStudentRegistrations(
   studentId: string
 ): Promise<StudentRegistrationWithActivity[]> {
-  const db = getDb();
-  const q = query(
-    collection(db, 'activityRegistrations'),
-    where('studentId', '==', studentId),
-    where('status', 'in', ['registered', 'attended']),
-    orderBy('registeredAt', 'desc')
-  );
+  console.log('🔍 getStudentRegistrations called with studentId:', studentId);
 
-  const querySnapshot = await getDocs(q);
-  const registrations = querySnapshot.docs.map(doc => doc.data() as ActivityRegistration);
+  try {
+    const db = getDb();
+    console.log('🔍 Database instance obtained');
 
-  // Get activity details for each registration
-  const registrationsWithActivities: StudentRegistrationWithActivity[] = [];
+    const q = query(
+      collection(db, 'activityRegistrations'),
+      where('studentId', '==', studentId),
+      where('status', 'in', ['registered', 'attended']),
+      orderBy('registeredAt', 'desc')
+    );
+    console.log('🔍 Query created for activityRegistrations');
 
-  for (const registration of registrations) {
-    try {
-      const activityDoc = await getDoc(doc(db, 'activities', registration.activityId));
-      if (activityDoc.exists()) {
-        const activity = activityDoc.data() as Activity;
-        registrationsWithActivities.push({
-          ...registration,
-          activity: {
-            id: activity.activityId,
-            title: activity.title,
-            activityType: activity.activityType,
-            date: activity.date,
-            location: activity.location
-          }
-        });
+    const querySnapshot = await getDocs(q);
+    console.log('🔍 Query executed, found', querySnapshot.size, 'registrations');
+
+    const registrations = querySnapshot.docs.map(doc => doc.data() as ActivityRegistration);
+    console.log('🔍 Registrations mapped:', registrations.length);
+
+    // Get activity details for each registration
+    const registrationsWithActivities: StudentRegistrationWithActivity[] = [];
+    console.log('🔍 Starting to fetch activity details for', registrations.length, 'registrations');
+
+    for (let i = 0; i < registrations.length; i++) {
+      const registration = registrations[i];
+      console.log(`🔍 Processing registration ${i + 1}/${registrations.length}:`, registration.activityId);
+
+      try {
+        const activityDoc = await getDoc(doc(db, 'activities', registration.activityId));
+        console.log(`🔍 Activity doc exists:`, activityDoc.exists());
+
+        if (activityDoc.exists()) {
+          const activity = activityDoc.data() as Activity;
+          console.log(`🔍 Activity data retrieved:`, activity.title);
+          registrationsWithActivities.push({
+            ...registration,
+            activity: {
+              id: activity.activityId,
+              title: activity.title,
+              activityType: activity.activityType,
+              date: activity.date,
+              location: activity.location
+            }
+          });
+        } else {
+          console.warn(`⚠️ Activity not found for ID: ${registration.activityId}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error fetching activity for registration ${registration.activityId}:`, error);
       }
-    } catch (error) {
-      console.error('Error fetching activity for registration:', error);
     }
-  }
 
-  return registrationsWithActivities;
+    console.log('🔍 Final result:', registrationsWithActivities.length, 'registrations with activities');
+    return registrationsWithActivities;
+  } catch (error) {
+    console.error('❌ Error in getStudentRegistrations:', error);
+    throw error;
+  }
 }
 
 /**

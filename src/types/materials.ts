@@ -129,6 +129,7 @@ export interface MaterialStatistics {
   totalDownloads: number;
   recentUploads: number; // Last 30 days
   storageUsed: number; // in bytes
+  totalViews: number;
 }
 
 // Popular materials (most downloaded)
@@ -163,7 +164,7 @@ export interface MaterialExportData {
 
 // Material activity log
 export interface MaterialActivity {
-  action: 'upload' | 'update' | 'delete' | 'download';
+  action: 'upload' | 'update' | 'delete' | 'download' | 'view';
   materialId: string;
   materialTitle: string;
   userId: string;

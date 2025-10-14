@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { listFilesByCategory, type FileMetadata, type FileCategory } from '@/lib/storage';
+import { listFilesByCategory, type FileMetadata, type FileCategory, incrementViewCount, trackFileDownload } from '@/lib/storage';
 import { formatFileSize, getFileIcon } from '@/lib/storage';
+import { useAuth } from '@/contexts/AuthContext';
+import { logUserView } from '@/lib/userActivity';
 
 interface FileBrowserProps {
   category: FileCategory;
@@ -11,6 +13,7 @@ interface FileBrowserProps {
 }
 
 export function FileBrowser({ category, title, description }: FileBrowserProps) {
+  const { user } = useAuth();
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +42,57 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
     file.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     file.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const handleDownload = async (file: FileMetadata) => {
+    if (!user) {
+      alert('Please log in to download files.');
+      return;
+    }
+
+    try {
+      // Track the download and get the download URL
+      const result = await trackFileDownload(file.id, user);
+
+      if (result.success && result.downloadURL) {
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = result.downloadURL;
+        link.download = file.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert('Failed to prepare download. Please try again.');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('An error occurred while downloading the file.');
+    }
+  };
+
+  const handleView = async (file: FileMetadata) => {
+    if (!user) {
+      alert('Please log in to view files.');
+      return;
+    }
+
+    try {
+      // Log the user view activity
+      await logUserView(user.userId, user.email, file.id, file.name);
+
+      // Increment the view count
+      await incrementViewCount(file.id);
+
+      console.log(`User view tracked: ${user.email} viewed ${file.name}`);
+
+      // Open the file in a new window
+      window.open(file.downloadURL, '_blank');
+
+    } catch (error) {
+      console.error('View error:', error);
+      alert('An error occurred while viewing the file.');
+    }
+  };
 
   const getFileCategoryColor = (category: FileCategory) => {
     switch (category) {
@@ -149,7 +203,7 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
                         {/* View button for supported file types */}
                         {(file.type.startsWith('image/') || file.type.includes('pdf')) && (
                           <button
-                            onClick={() => window.open(file.downloadURL, '_blank')}
+                            onClick={() => handleView(file)}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
                           >
                             <i className="fas fa-eye"></i>
@@ -157,14 +211,13 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
                           </button>
                         )}
                         {/* Download button */}
-                        <a
-                          href={file.downloadURL}
-                          download={file.name}
+                        <button
+                          onClick={() => handleDownload(file)}
                           className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
                         >
                           <i className="fas fa-download"></i>
                           Download
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>

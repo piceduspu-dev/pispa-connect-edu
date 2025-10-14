@@ -285,7 +285,8 @@ export async function getMaterialStatistics(): Promise<MaterialStatistics> {
       },
       totalDownloads: 0,
       recentUploads: 0,
-      storageUsed: 0
+      storageUsed: 0,
+      totalViews: 0
     };
 
     // Calculate statistics
@@ -306,6 +307,9 @@ export async function getMaterialStatistics(): Promise<MaterialStatistics> {
       if (uploadDate >= thirtyDaysAgo) {
         stats.recentUploads++;
       }
+
+      // Sum total views
+      stats.totalViews += file.viewCount || 0;
     });
 
     console.log('Material statistics calculated:', {
@@ -313,7 +317,8 @@ export async function getMaterialStatistics(): Promise<MaterialStatistics> {
       byCategory: stats.materialsByCategory,
       byFileType: stats.materialsByFileType,
       recentUploads: stats.recentUploads,
-      storageUsed: stats.storageUsed
+      storageUsed: stats.storageUsed,
+      totalViews: stats.totalViews
     });
 
     return stats;
@@ -346,7 +351,8 @@ export async function getMaterialStatistics(): Promise<MaterialStatistics> {
       },
       totalDownloads: 0,
       recentUploads: 0,
-      storageUsed: 0
+      storageUsed: 0,
+      totalViews: 0
     };
   }
 }

@@ -3,7 +3,7 @@
  * Provides unified statistics data for the admin dashboard
  */
 
-import { collection, query, orderBy, limit, getDocs, doc, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc, Timestamp } from 'firebase/firestore';
 import { getDb } from './firebase';
 import { getStudentStatistics, getActiveStudentsCount } from './students';
 import { getMaterialStatistics } from './materials';
@@ -35,7 +35,9 @@ export interface DashboardStatistics {
   totalStudents: number;
   activeStudents: number;
   totalMaterials: number;
+  totalViews: number;
   upcomingActivities: number;
+  attendanceRate: number;
   recentRegistrations: RecentActivityRegistration[];
   systemStatus: {
     isOperational: boolean;
@@ -56,20 +58,24 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
       activeStudentsCount,
       materialStats,
       activityStats,
-      upcomingActivitiesList
+      upcomingActivitiesList,
+      attendanceRate
     ] = await Promise.all([
       getStudentStatistics(),
       getActiveStudentsCount(),
       getMaterialStatistics(),
       getActivityStatistics(),
-      getUpcomingActivities()
+      getUpcomingActivities(),
+      getAttendanceRate()
     ]);
 
     console.log('Statistics fetched:', {
       totalStudents: studentStats.totalStudents,
       activeStudents: activeStudentsCount,
       totalMaterials: materialStats.totalMaterials,
-      upcomingActivities: upcomingActivitiesList.length
+      totalViews: materialStats.totalViews,
+      upcomingActivities: upcomingActivitiesList.length,
+      attendanceRate: attendanceRate
     });
 
     // Get recent activity registrations
@@ -81,7 +87,9 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
       totalStudents: studentStats.totalStudents,
       activeStudents: activeStudentsCount,
       totalMaterials: materialStats.totalMaterials,
+      totalViews: materialStats.totalViews,
       upcomingActivities: upcomingActivitiesList.length,
+      attendanceRate,
       recentRegistrations,
       systemStatus: {
         isOperational: true,
@@ -100,7 +108,9 @@ export async function getDashboardStatistics(): Promise<DashboardStatistics> {
       totalStudents: 0,
       activeStudents: 0,
       totalMaterials: 0,
+      totalViews: 0,
       upcomingActivities: 0,
+      attendanceRate: 0,
       recentRegistrations: [],
       systemStatus: {
         isOperational: false,
@@ -122,7 +132,9 @@ export async function getSummaryStatistics() {
         totalStudents: stats.totalStudents,
         activeStudents: stats.activeStudents,
         totalMaterials: stats.totalMaterials,
-        upcomingActivities: stats.upcomingActivities
+        totalViews: stats.totalViews,
+        upcomingActivities: stats.upcomingActivities,
+        attendanceRate: stats.attendanceRate
       },
       engagement: {
         studentActivityRate: stats.totalStudents > 0 ?
@@ -140,7 +152,9 @@ export async function getSummaryStatistics() {
         totalStudents: 0,
         activeStudents: 0,
         totalMaterials: 0,
-        upcomingActivities: 0
+        totalViews: 0,
+        upcomingActivities: 0,
+        attendanceRate: 0
       },
       engagement: {
         studentActivityRate: 0,
@@ -188,6 +202,55 @@ export async function getDetailedAnalytics() {
   } catch (error) {
     console.error('Error fetching detailed analytics:', error);
     throw new Error('Failed to fetch detailed analytics');
+  }
+}
+
+/**
+ * Calculate attendance rate from activity registrations
+ */
+export async function getAttendanceRate(days: number = 30): Promise<number> {
+  try {
+    console.log('Calculating attendance rate...');
+
+    const db = getDb();
+
+    // Get registrations from the last N days
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const q = query(
+      collection(db, 'activityRegistrations'),
+      where('registeredAt', '>=', Timestamp.fromDate(startDate)),
+      where('status', 'in', ['attended', 'absent']) // Only count attended/absent for rate calculation
+    );
+
+    const querySnapshot = await getDocs(q);
+    const registrations = querySnapshot.docs.map(doc => doc.data() as any);
+
+    console.log(`Found ${registrations.length} attendance records in last ${days} days`);
+
+    if (registrations.length === 0) {
+      return 0; // No attendance data available
+    }
+
+    // Count attended vs absent
+    const attendedCount = registrations.filter(reg => reg.status === 'attended').length;
+    const absentCount = registrations.filter(reg => reg.status === 'absent').length;
+    const totalAttendanceRecords = attendedCount + absentCount;
+
+    if (totalAttendanceRecords === 0) {
+      return 0; // No definitive attendance records
+    }
+
+    const attendanceRate = Math.round((attendedCount / totalAttendanceRecords) * 100);
+
+    console.log(`Attendance rate calculated: ${attendanceRate}% (${attendedCount}/${totalAttendanceRecords})`);
+
+    return attendanceRate;
+
+  } catch (error) {
+    console.error('Error calculating attendance rate:', error);
+    return 0; // Return 0 on error
   }
 }
 
@@ -254,9 +317,9 @@ export async function getRecentActivityRegistrations(limitCount: number = 5): Pr
                 emergencyContact: userData.emergencyContact || 'N/A',
                 profilePhotoURL: userData.profilePhotoURL || '',
                 trainingStatus: userData.trainingStatus || 'active',
-                enrollmentDate: new Date(),
-                createdAt: userData.createdAt || new Date(),
-                updatedAt: userData.updatedAt || new Date()
+                enrollmentDate: Timestamp.now(),
+                createdAt: userData.createdAt || Timestamp.now(),
+                updatedAt: userData.updatedAt || Timestamp.now()
               };
               console.log('Created student object from user data:', student);
             }

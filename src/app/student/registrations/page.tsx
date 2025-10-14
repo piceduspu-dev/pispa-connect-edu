@@ -7,7 +7,7 @@ import { getStudentRegistrations, cancelRegistration, type StudentRegistrationWi
 import { format } from 'date-fns';
 
 export default function MyRegistrationsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [registrations, setRegistrations] = useState<StudentRegistrationWithActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,20 +15,28 @@ export default function MyRegistrationsPage() {
 
   useEffect(() => {
     loadRegistrations();
-  }, []);
+  }, [user, authLoading]); // Add user and authLoading as dependencies
 
   const loadRegistrations = async () => {
-    if (!user) return;
+    console.log('🚀 loadRegistrations called, user:', user?.userId, 'authLoading:', authLoading);
+    if (!user || authLoading) {
+      console.log('❌ No user found or auth still loading, returning');
+      return;
+    }
 
     try {
+      console.log('🔄 Setting loading state to true');
       setLoading(true);
       setError(null);
+      console.log('📞 Calling getStudentRegistrations...');
       const studentRegistrations = await getStudentRegistrations(user.userId);
+      console.log('📊 Got registrations:', studentRegistrations.length);
       setRegistrations(studentRegistrations);
     } catch (error) {
-      console.error('Error loading registrations:', error);
+      console.error('❌ Error loading registrations:', error);
       setError('Failed to load your registrations');
     } finally {
+      console.log('✅ Setting loading state to false');
       setLoading(false);
     }
   };
@@ -99,14 +107,16 @@ export default function MyRegistrationsPage() {
     return date > new Date();
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-              <span className="ml-3 text-gray-600">Loading your registrations...</span>
+              <span className="ml-3 text-gray-600">
+                {authLoading ? 'Authenticating...' : 'Loading your registrations...'}
+              </span>
             </div>
           </div>
         </div>
@@ -120,8 +130,19 @@ export default function MyRegistrationsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">My Registrations</h1>
-            <p className="text-gray-600 mt-1">View and manage your activity registrations</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">My Registrations</h1>
+                <p className="text-gray-600 mt-1">View and manage your activity registrations</p>
+              </div>
+              <a
+                href="/dashboard"
+                className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                <i className="fas fa-arrow-left mr-2"></i>
+                Back to Dashboard
+              </a>
+            </div>
           </div>
 
           {error && (

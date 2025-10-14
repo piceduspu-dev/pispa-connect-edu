@@ -143,9 +143,12 @@ export async function deleteStudent(studentId: string): Promise<void> {
  */
 export async function getStudentStatistics(): Promise<StudentStatistics> {
   const db = getDb();
-  const q = query(collection(db, 'students'));
+  const q = query(
+    collection(db, 'users'),
+    where('role', '==', 'student')
+  );
   const querySnapshot = await getDocs(q);
-  const students = querySnapshot.docs.map(doc => doc.data() as Student);
+  const students = querySnapshot.docs.map(doc => doc.data() as any);
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -159,25 +162,34 @@ export async function getStudentStatistics(): Promise<StudentStatistics> {
     recentEnrollments: 0
   };
 
+  console.log(`Found ${students.length} students in users collection for statistics`);
+
   // Calculate statistics
   students.forEach(student => {
     // Count by programme
-    stats.studentsByProgramme[student.programme] = (stats.studentsByProgramme[student.programme] || 0) + 1;
+    if (student.programme) {
+      stats.studentsByProgramme[student.programme] = (stats.studentsByProgramme[student.programme] || 0) + 1;
+    }
 
     // Count by semester
-    stats.studentsBySemester[student.semester] = (stats.studentsBySemester[student.semester] || 0) + 1;
+    if (student.semester) {
+      stats.studentsBySemester[student.semester] = (stats.studentsBySemester[student.semester] || 0) + 1;
+    }
 
-    // Count by training status
-    const status = student.trainingStatus || 'active';
+    // Count by account status (similar to training status)
+    const status = student.accountStatus || 'active';
     stats.studentsByTrainingStatus[status] = (stats.studentsByTrainingStatus[status] || 0) + 1;
 
     // Count recent enrollments (last 30 days)
-    const enrollmentDate = student.enrollmentDate.toDate();
-    if (enrollmentDate >= thirtyDaysAgo) {
-      stats.recentEnrollments++;
+    if (student.createdAt) {
+      const enrollmentDate = student.createdAt.toDate();
+      if (enrollmentDate >= thirtyDaysAgo) {
+        stats.recentEnrollments++;
+      }
     }
   });
 
+  console.log('Student statistics calculated:', stats);
   return stats;
 }
 
@@ -217,11 +229,13 @@ export async function getStudentsByTrainingStatus(status: TrainingStatus): Promi
 export async function getActiveStudentsCount(): Promise<number> {
   const db = getDb();
   const q = query(
-    collection(db, 'students'),
-    where('trainingStatus', '==', 'active')
+    collection(db, 'users'),
+    where('role', '==', 'student'),
+    where('accountStatus', '==', 'active')
   );
 
   const querySnapshot = await getDocs(q);
+  console.log(`Found ${querySnapshot.docs.length} active students in users collection`);
   return querySnapshot.docs.length;
 }
 
