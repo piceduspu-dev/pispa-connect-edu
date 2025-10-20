@@ -194,7 +194,6 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
     { id: 'materials', label: 'Learning Materials', icon: 'fas fa-book' },
     { id: 'activities', label: 'Activities', icon: 'fas fa-calendar' },
     { id: 'registrations', label: 'My Registrations', icon: 'fas fa-list-check' },
-    { id: 'progress', label: 'My Progress', icon: 'fas fa-chart-line' },
   ];
 
   return (
@@ -509,41 +508,6 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {activeView === 'progress' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">My Progress</h3>
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">APM Training</span>
-                <span className="text-sm text-gray-600">75%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{ width: '75%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Drill Practice</span>
-                <span className="text-sm text-gray-600">90%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '90%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">Leadership Skills</span>
-                <span className="text-sm text-gray-600">60%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '60%' }}></div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>
