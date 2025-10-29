@@ -68,7 +68,7 @@ export function FileUpload({
     try {
       const uploadOptions: UploadOptions = {
         category,
-        description: fileDescription || undefined,
+        description: fileDescription.trim(),
         tags: tags ? tags.split(',').map(tag => tag.trim()) : undefined,
         onProgress: (progress) => {
           setProgress(progress);
@@ -139,7 +139,7 @@ export function FileUpload({
       {/* File Description */}
       <div className="mb-4">
         <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-          Description (Optional)
+          Description <span className="text-red-500">*</span>
         </label>
         <textarea
           id="description"
@@ -149,7 +149,11 @@ export function FileUpload({
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
           rows={3}
           disabled={uploading}
+          required
         />
+        {!fileDescription && !uploading && (
+          <p className="text-xs text-red-500 mt-1">Description is required</p>
+        )}
       </div>
 
       {/* Tags */}
@@ -207,7 +211,7 @@ export function FileUpload({
       {/* Upload Button */}
       <button
         onClick={handleUpload}
-        disabled={!selectedFile || uploading}
+        disabled={!selectedFile || !fileDescription.trim() || uploading}
         className="w-full bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {uploading ? (

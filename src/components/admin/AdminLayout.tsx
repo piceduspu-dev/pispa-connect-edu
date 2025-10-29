@@ -19,8 +19,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: 'fas fa-tachometer-alt' },
     { name: 'Materials', href: '/admin/materials', icon: 'fas fa-book' },
-    { name: 'Activities', href: '/admin/activities', icon: 'fas fa-calendar-alt' },
-    { name: 'Students', href: '/admin/students', icon: 'fas fa-users' },
+    { name: 'Activities', href: '/admin#activities', icon: 'fas fa-calendar-alt' },
   ];
 
   const isActive = (href: string) => {

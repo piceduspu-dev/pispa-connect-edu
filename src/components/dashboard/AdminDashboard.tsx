@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react';
 import { User } from '@/types/user';
 import { FileUpload } from '@/components/admin/FileUpload';
 import { FileList } from '@/components/admin/FileList';
+import { ActivityForm } from '@/components/admin/ActivityForm';
+import { ActivityList } from '@/components/admin/ActivityList';
 import { getDashboardStatistics, DashboardStatistics, RecentActivityRegistration } from '@/lib/statistics';
+import { type Activity } from '@/types/activities';
 
 interface AdminDashboardProps {
   user: User;
@@ -16,7 +19,6 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
   // Navigation tabs for admin dashboard
   const navTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
-    { id: 'students', label: 'Students', icon: 'fas fa-users' },
     { id: 'materials', label: 'Materials', icon: 'fas fa-book' },
     { id: 'activities', label: 'Activities', icon: 'fas fa-calendar' },
     { id: 'analytics', label: 'Analytics', icon: 'fas fa-chart-bar' },
@@ -24,6 +26,10 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
 
   // State for file management
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // State for activity management
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [activityRefreshTrigger, setActivityRefreshTrigger] = useState(0);
 
   // State for dashboard statistics
   const [stats, setStats] = useState<DashboardStatistics | null>(null);
@@ -111,6 +117,20 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
       case 'absent': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  // Activity management handler functions
+  const handleActivitySaved = () => {
+    setEditingActivity(null);
+    setActivityRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleEditActivity = (activity: Activity) => {
+    setEditingActivity(activity);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingActivity(null);
   };
 
   return (
@@ -335,46 +355,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
         </>
       )}
 
-      {activeView === 'students' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900">Student Management</h3>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Programme</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semester</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Ahmad Ibrahim</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">PISPA2024001</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">APM</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">1</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Active
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-green-600 hover:text-green-900 mr-3">Edit</button>
-                    <button className="text-red-600 hover:text-red-900">Delete</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
+      
       {activeView === 'materials' && (
         <div className="space-y-6">
           {/* Learning Materials Upload */}
@@ -428,19 +409,23 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
       )}
 
       {activeView === 'activities' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="text-center py-12">
-            <i className="fas fa-calendar-alt text-gray-300 text-6xl mb-4"></i>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Activity Management</h3>
-            <p className="text-gray-600 mb-6">Manage PISPA activities, training sessions, and events</p>
-            <a
-              href="/admin/activities"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors"
-            >
-              <i className="fas fa-arrow-right mr-2"></i>
-              Go to Activity Management
-            </a>
-          </div>
+        <div className="space-y-6">
+          {editingActivity ? (
+            <ActivityForm
+              activity={editingActivity}
+              onSuccess={handleActivitySaved}
+              onCancel={handleCancelEdit}
+            />
+          ) : (
+            <ActivityForm
+              onSuccess={handleActivitySaved}
+            />
+          )}
+
+          <ActivityList
+            refreshTrigger={activityRefreshTrigger}
+            onEdit={handleEditActivity}
+          />
         </div>
       )}
 
