@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { listFilesByCategory, deleteFile, updateFileMetadata, type FileMetadata, type FileCategory } from '@/lib/storage';
 import { formatFileSize, getFileIcon } from '@/lib/storage';
+import { VideoPlayer } from '@/components/ui/VideoPlayer';
 
 interface FileListProps {
   category: FileCategory;
@@ -22,6 +23,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
     description: '',
     tags: ''
   });
+  const [selectedVideo, setSelectedVideo] = useState<FileMetadata | null>(null);
 
   useEffect(() => {
     loadFiles();
@@ -241,6 +243,16 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
+                    {/* Play button for videos */}
+                    {file.type.startsWith('video/') && (
+                      <button
+                        onClick={() => setSelectedVideo(file)}
+                        className="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-md transition-colors"
+                        title="Play Video"
+                      >
+                        <i className="fas fa-play"></i>
+                      </button>
+                    )}
                     <a
                       href={file.downloadURL}
                       target="_blank"
@@ -275,6 +287,15 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Video Player Modal */}
+      {selectedVideo && (
+        <VideoPlayer
+          file={selectedVideo}
+          isOpen={!!selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+        />
       )}
     </div>
   );

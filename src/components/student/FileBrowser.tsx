@@ -5,6 +5,7 @@ import { listFilesByCategory, type FileMetadata, type FileCategory, incrementVie
 import { formatFileSize, getFileIcon } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import { logUserView } from '@/lib/userActivity';
+import { VideoPlayer } from '@/components/ui/VideoPlayer';
 
 interface FileBrowserProps {
   category: FileCategory;
@@ -18,6 +19,7 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedVideo, setSelectedVideo] = useState<FileMetadata | null>(null);
 
   useEffect(() => {
     loadFiles();
@@ -85,12 +87,39 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
 
       console.log(`User view tracked: ${user.email} viewed ${file.name}`);
 
-      // Open the file in a new window
-      window.open(file.downloadURL, '_blank');
+      // For videos, open in video player; for others, open in new window
+      if (file.type.startsWith('video/')) {
+        setSelectedVideo(file);
+      } else {
+        window.open(file.downloadURL, '_blank');
+      }
 
     } catch (error) {
       console.error('View error:', error);
       alert('An error occurred while viewing the file.');
+    }
+  };
+
+  const handlePlayVideo = async (file: FileMetadata) => {
+    if (!user) {
+      alert('Please log in to play videos.');
+      return;
+    }
+
+    try {
+      // Log the user view activity for video playback
+      await logUserView(user.userId, user.email, file.id, file.name);
+
+      // Increment the view count
+      await incrementViewCount(file.id);
+
+      console.log(`Video play tracked: ${user.email} played ${file.name}`);
+
+      // Open video player
+      setSelectedVideo(file);
+    } catch (error) {
+      console.error('Video play error:', error);
+      alert('An error occurred while playing the video.');
     }
   };
 
@@ -200,6 +229,16 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
                         {file.uploadedAt.toDate().toLocaleDateString()}
                       </p>
                       <div className="flex items-center space-x-2">
+                        {/* Play button for videos */}
+                        {file.type.startsWith('video/') && (
+                          <button
+                            onClick={() => handlePlayVideo(file)}
+                            className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                          >
+                            <i className="fas fa-play"></i>
+                            Play
+                          </button>
+                        )}
                         {/* View button for supported file types */}
                         {(file.type.startsWith('image/') || file.type.includes('pdf')) && (
                           <button
@@ -233,6 +272,15 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
         <div className="mt-4 text-sm text-gray-600 text-center">
           Showing {filteredFiles.length} of {files.length} files
         </div>
+      )}
+
+      {/* Video Player Modal */}
+      {selectedVideo && (
+        <VideoPlayer
+          file={selectedVideo}
+          isOpen={!!selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+        />
       )}
     </div>
   );
