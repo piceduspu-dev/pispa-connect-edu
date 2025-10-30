@@ -130,7 +130,7 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
       event: 'bg-purple-100 text-purple-800',
       announcement: 'bg-yellow-100 text-yellow-800',
       competition: 'bg-red-100 text-red-800',
-      ceremony: 'bg-green-100 text-green-800',
+      ceremony: 'bg-orange-100 text-orange-800',
       workshop: 'bg-indigo-100 text-indigo-800',
       meeting: 'bg-gray-100 text-gray-800',
       exercise: 'bg-orange-100 text-orange-800',
@@ -175,12 +175,12 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
   };
 
   const getDateColor = (date: Date) => {
-    if (isToday(date)) return 'text-green-700 bg-green-50 border-green-200';
+    if (isToday(date)) return 'text-orange-700 bg-orange-50 border-orange-200';
     if (isTomorrow(date)) return 'text-blue-700 bg-blue-50 border-blue-200';
 
     const diffDays = Math.ceil((date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays <= 7) return 'text-purple-700 bg-purple-50 border-purple-200';
-    if (diffDays <= 30) return 'text-orange-700 bg-orange-50 border-orange-200';
+    if (diffDays <= 30) return 'text-blue-700 bg-blue-50 border-blue-200';
 
     return 'text-gray-700 bg-gray-50 border-gray-200';
   };
@@ -190,7 +190,7 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
           <span className="ml-3 text-gray-600">Loading activities...</span>
         </div>
       </div>
@@ -207,7 +207,7 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
       </div>
 
       {error && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-exclamation-triangle mt-0.5"></i>
             <div>{error}</div>
@@ -274,7 +274,7 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
                         <div className="flex items-center justify-between">
                           <div className="text-xs">
                             {registrationStatuses[activity.activityId] ? (
-                              <span className="text-green-600 font-medium flex items-center gap-1">
+                              <span className="text-orange-600 font-medium flex items-center gap-1">
                                 <i className="fas fa-check-circle"></i>
                                 Registered
                               </span>
@@ -304,7 +304,7 @@ export function ActivityBrowser({ title = "Upcoming Activities", description = "
                                 processing[activity.activityId] ||
                                 availableSlots[activity.activityId]?.available === 0
                               }
-                              className="text-xs bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-xs bg-orange-600 text-white px-3 py-1 rounded-md hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {processing[activity.activityId] ? (
                                 <i className="fas fa-spinner fa-spin"></i>

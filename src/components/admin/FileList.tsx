@@ -112,7 +112,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
   const getFileCategoryColor = (category: FileCategory) => {
     switch (category) {
       case 'learning-materials': return 'bg-blue-100 text-blue-800';
-      case 'drill-guides': return 'bg-green-100 text-green-800';
+      case 'drill-guides': return 'bg-orange-100 text-orange-800';
       case 'activity-files': return 'bg-purple-100 text-purple-800';
       case 'profile-photos': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -124,7 +124,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
           <span className="ml-3 text-gray-600">Loading files...</span>
         </div>
       </div>
@@ -136,7 +136,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
       <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
 
       {error && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-exclamation-triangle mt-0.5"></i>
             <div>{error}</div>
@@ -145,7 +145,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
       )}
 
       {success && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-green-500 bg-green-50 text-green-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-orange-500 bg-orange-50 text-orange-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-check-circle mt-0.5"></i>
             <div>{success}</div>
@@ -170,7 +170,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
                       type="text"
                       value={editForm.name}
                       onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-orange-500 outline-none text-gray-900"
                     />
                   </div>
                   <div>
@@ -178,7 +178,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
                     <textarea
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-orange-500 outline-none text-gray-900"
                       rows={3}
                     />
                   </div>
@@ -189,13 +189,13 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
                       value={editForm.tags}
                       onChange={(e) => setEditForm({ ...editForm, tags: e.target.value })}
                       placeholder="Enter tags separated by commas"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-orange-500 outline-none text-gray-900"
                     />
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleSaveEdit(file.id)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                      className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
                     >
                       Save
                     </button>
@@ -252,7 +252,7 @@ export function FileList({ category, title, refreshTrigger }: FileListProps) {
                     </a>
                     <button
                       onClick={() => handleEdit(file)}
-                      className="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-md transition-colors"
+                      className="text-orange-600 hover:text-orange-800 p-2 hover:bg-orange-50 rounded-md transition-colors"
                       title="Edit"
                     >
                       <i className="fas fa-edit"></i>

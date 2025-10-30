@@ -111,7 +111,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
   // Get registration status color
   const getRegistrationStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
-      case 'registered': return 'bg-green-100 text-green-800';
+      case 'registered': return 'bg-orange-100 text-orange-800';
       case 'attended': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       case 'absent': return 'bg-yellow-100 text-yellow-800';
@@ -147,11 +147,6 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
             </p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-600">System Status</div>
-            <div className={`flex items-center ${stats?.systemStatus.isOperational ? 'text-green-600' : 'text-red-600'}`}>
-              <i className={`fas fa-circle text-xs mr-2`}></i>
-              {stats?.systemStatus.isOperational ? 'All Systems Operational' : 'System Issues Detected'}
-            </div>
             {stats && (
               <div className="text-xs text-gray-500 mt-1">
                 Last updated: {formatRelativeTime(stats.systemStatus.lastUpdated)}
@@ -170,7 +165,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
               onClick={() => onViewChange(tab.id)}
               className={`${
                 activeView === tab.id
-                  ? 'border-green-500 text-green-600'
+                  ? 'border-orange-500 text-orange-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors`}
             >
@@ -262,7 +257,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
                     </div>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Learning Materials</p>
+                    <p className="text-sm font-medium text-gray-600">PISPA Materials</p>
                     <p className="text-2xl font-semibold text-gray-900">{stats.totalMaterials}</p>
                   </div>
                 </div>
@@ -341,11 +336,17 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
             <div className="md:col-span-2 lg:col-span-4 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={() => onViewChange('activities')}
+                  className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
                   <i className="fas fa-plus mr-2"></i>
                   Create Activity
                 </button>
-                <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={() => onViewChange('materials')}
+                  className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
                   <i className="fas fa-upload mr-2"></i>
                   Upload Material
                 </button>
@@ -361,7 +362,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
           {/* Learning Materials Upload */}
           <FileUpload
             category="learning-materials"
-            title="Upload Learning Materials"
+            title="PISPA 1"
             description="Upload official APM learning materials for Semester 1 PISPA students"
             allowedTypes={[
               'application/pdf',
@@ -377,7 +378,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
           {/* Drill Guides Upload */}
           <FileUpload
             category="drill-guides"
-            title="Upload Drill & Marching Guides"
+            title="PISPA 2"
             description="Upload drill instructions, marching guides, and training videos"
             allowedTypes={[
               'application/pdf',
@@ -392,17 +393,17 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
             onUploadComplete={() => setRefreshTrigger(prev => prev + 1)}
           />
 
-          {/* Learning Materials List */}
+          {/* PISPA 1 List */}
           <FileList
             category="learning-materials"
-            title="Learning Materials"
+            title="PISPA 1"
             refreshTrigger={refreshTrigger}
           />
 
-          {/* Drill Guides List */}
+          {/* PISPA 2 List */}
           <FileList
             category="drill-guides"
-            title="Drill & Marching Guides"
+            title="PISPA 2"
             refreshTrigger={refreshTrigger}
           />
         </div>
@@ -464,7 +465,7 @@ export function AdminDashboard({ user, activeView, onViewChange }: AdminDashboar
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                      className="bg-orange-600 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${stats?.attendanceRate || 0}%` }}
                     ></div>
                   </div>

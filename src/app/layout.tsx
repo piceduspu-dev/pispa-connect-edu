@@ -29,8 +29,17 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
       >
+        {/* Background Image */}
+        <div
+          className="fixed inset-0 w-full h-full bg-cover bg-center bg-fixed -z-10"
+          style={{ backgroundImage: 'url(/background.jpeg)' }}
+        />
+
+        {/* Overlay for readability */}
+        <div className="fixed inset-0 w-full h-full bg-white/80 -z-10" />
+
         <AuthProvider>
           {children}
         </AuthProvider>

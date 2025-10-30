@@ -66,7 +66,7 @@ export default function MyRegistrationsPage() {
       event: 'bg-purple-100 text-purple-800',
       announcement: 'bg-yellow-100 text-yellow-800',
       competition: 'bg-red-100 text-red-800',
-      ceremony: 'bg-green-100 text-green-800',
+      ceremony: 'bg-orange-100 text-orange-800',
       workshop: 'bg-indigo-100 text-indigo-800',
       meeting: 'bg-gray-100 text-gray-800',
       exercise: 'bg-orange-100 text-orange-800',
@@ -91,7 +91,7 @@ export default function MyRegistrationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'registered':
-        return 'bg-green-100 text-green-800';
+        return 'bg-orange-100 text-orange-800';
       case 'attended':
         return 'bg-blue-100 text-blue-800';
       case 'cancelled':
@@ -110,10 +110,10 @@ export default function MyRegistrationsPage() {
   if (loading || authLoading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-transparent">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
               <span className="ml-3 text-gray-600">
                 {authLoading ? 'Authenticating...' : 'Loading your registrations...'}
               </span>
@@ -126,7 +126,7 @@ export default function MyRegistrationsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
@@ -146,7 +146,7 @@ export default function MyRegistrationsPage() {
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+            <div className="mb-6 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
               <div className="flex items-start gap-3">
                 <i className="fas fa-exclamation-triangle mt-0.5"></i>
                 <div>{error}</div>
@@ -161,7 +161,7 @@ export default function MyRegistrationsPage() {
               <p className="text-gray-600 mb-6">You haven't registered for any activities.</p>
               <a
                 href="/dashboard"
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
               >
                 <i className="fas fa-search mr-2"></i>
                 Browse Activities
@@ -174,8 +174,8 @@ export default function MyRegistrationsPage() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <i className="fas fa-calendar-check text-green-600"></i>
+                      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                        <i className="fas fa-calendar-check text-orange-600"></i>
                       </div>
                     </div>
                     <div className="ml-4">
@@ -295,7 +295,7 @@ export default function MyRegistrationsPage() {
                             )}
 
                             {!upcoming && registration.status === 'attended' && (
-                              <span className="text-xs text-green-600 font-medium">
+                              <span className="text-xs text-orange-600 font-medium">
                                 <i className="fas fa-check-circle mr-1"></i>
                                 Attended
                               </span>

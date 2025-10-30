@@ -30,15 +30,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-transparent">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Brand */}
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-600 to-green-400 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                <i className="fas fa-graduation-cap"></i>
+              <div className="w-10 h-10 rounded-lg overflow-hidden shadow-md">
+                <img
+                  src="/assets/images/pispa-icon.jpeg"
+                  alt="PISPA Logo"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="ml-3">
                 <h1 className="text-xl font-medium text-gray-900">PISPA Connect</h1>
@@ -57,7 +61,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
               >
                 <i className="fas fa-sign-out-alt mr-2"></i>
                 Logout

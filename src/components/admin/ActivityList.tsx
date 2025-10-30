@@ -245,7 +245,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
       event: 'bg-purple-100 text-purple-800',
       announcement: 'bg-yellow-100 text-yellow-800',
       competition: 'bg-red-100 text-red-800',
-      ceremony: 'bg-green-100 text-green-800',
+      ceremony: 'bg-orange-100 text-orange-800',
       workshop: 'bg-indigo-100 text-indigo-800',
       meeting: 'bg-gray-100 text-gray-800',
       exercise: 'bg-orange-100 text-orange-800',
@@ -269,7 +269,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
           <span className="ml-3 text-gray-600">Loading activities...</span>
         </div>
       </div>
@@ -285,7 +285,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as ActivityType | 'all')}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900 text-sm"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900 text-sm"
           >
             {activityTypes.map((type) => (
               <option key={type.value} value={type.value}>
@@ -299,7 +299,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
               type="checkbox"
               checked={showInactive}
               onChange={(e) => setShowInactive(e.target.checked)}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded mr-2"
+              className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded mr-2"
             />
             Show inactive
           </label>
@@ -307,7 +307,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-exclamation-triangle mt-0.5"></i>
             <div>{error}</div>
@@ -316,7 +316,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
       )}
 
       {success && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-green-500 bg-green-50 text-green-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-orange-500 bg-orange-50 text-orange-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-check-circle mt-0.5"></i>
             <div>{success}</div>
@@ -400,7 +400,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
                 <div className="flex items-center gap-2 ml-4">
                   <button
                     onClick={() => onEdit?.(activity)}
-                    className="text-green-600 hover:text-green-800 p-2 hover:bg-green-50 rounded-md transition-colors"
+                    className="text-orange-600 hover:text-orange-800 p-2 hover:bg-orange-50 rounded-md transition-colors"
                     title="Edit"
                   >
                     <i className="fas fa-edit"></i>
@@ -470,7 +470,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
                           <div className="flex items-center space-x-2">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               registration.status === 'registered' ? 'bg-blue-100 text-blue-800' :
-                              registration.status === 'attended' ? 'bg-green-100 text-green-800' :
+                              registration.status === 'attended' ? 'bg-orange-100 text-orange-800' :
                               registration.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
                               'bg-red-100 text-red-800'
                             }`}>
@@ -482,7 +482,7 @@ export function ActivityList({ refreshTrigger, onEdit }: ActivityListProps) {
                                 <button
                                   onClick={() => handleMarkAttendance(registration.id, true)}
                                   disabled={markingAttendance === registration.id}
-                                  className="text-xs bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 transition-colors disabled:opacity-50"
+                                  className="text-xs bg-orange-50 text-orange-600 px-2 py-1 rounded hover:bg-orange-100 transition-colors disabled:opacity-50"
                                 >
                                   {markingAttendance === registration.id ? (
                                     <i className="fas fa-spinner fa-spin"></i>

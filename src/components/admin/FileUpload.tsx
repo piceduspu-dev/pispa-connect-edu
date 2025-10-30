@@ -113,7 +113,7 @@ export function FileUpload({
           type="file"
           onChange={handleFileSelect}
           accept={allowedTypes.join(',')}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
           disabled={uploading}
         />
         <p className="text-xs text-gray-500 mt-1">
@@ -146,7 +146,7 @@ export function FileUpload({
           value={fileDescription}
           onChange={(e) => setFileDescription(e.target.value)}
           placeholder="Enter a brief description of the file..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
           rows={3}
           disabled={uploading}
           required
@@ -167,7 +167,7 @@ export function FileUpload({
           value={tags}
           onChange={(e) => setTags(e.target.value)}
           placeholder="Enter tags separated by commas..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
           disabled={uploading}
         />
         <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
@@ -182,7 +182,7 @@ export function FileUpload({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-green-600 h-2 rounded-full transition-all duration-300"
+              className="bg-orange-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -191,7 +191,7 @@ export function FileUpload({
 
       {/* Alerts */}
       {error && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-exclamation-triangle mt-0.5"></i>
             <div>{error}</div>
@@ -200,7 +200,7 @@ export function FileUpload({
       )}
 
       {success && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-green-500 bg-green-50 text-green-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-orange-500 bg-orange-50 text-orange-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-check-circle mt-0.5"></i>
             <div>{success}</div>
@@ -212,7 +212,7 @@ export function FileUpload({
       <button
         onClick={handleUpload}
         disabled={!selectedFile || !fileDescription.trim() || uploading}
-        className="w-full bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full bg-orange-600 text-white py-2 px-4 rounded-md font-medium hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {uploading ? (
           <>

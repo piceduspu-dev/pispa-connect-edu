@@ -7,6 +7,7 @@ import { ActivityBrowser } from '@/components/student/ActivityBrowser';
 import { getUpcomingActivities } from '@/lib/activities';
 import { getUserDownloadCount, getUserRecentActivities } from '@/lib/userActivity';
 import { getStudentRegistrations, cancelRegistration, type StudentRegistrationWithActivity } from '@/lib/registrations';
+import { getMaterialStatistics } from '@/lib/materials';
 import { format } from 'date-fns';
 
 interface StudentDashboardProps {
@@ -17,6 +18,7 @@ interface StudentDashboardProps {
 
 export function StudentDashboard({ user, activeView, onViewChange }: StudentDashboardProps) {
   const [upcomingCount, setUpcomingCount] = useState(0);
+  const [materialsCount, setMaterialsCount] = useState(0);
   const [downloadCount, setDownloadCount] = useState(0);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<StudentRegistrationWithActivity[]>([]);
@@ -34,6 +36,18 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
       }
     };
     loadActivityCount();
+  }, []);
+
+  useEffect(() => {
+    const loadMaterialsCount = async () => {
+      try {
+        const stats = await getMaterialStatistics();
+        setMaterialsCount(stats.totalMaterials);
+      } catch (error) {
+        console.error('Error loading materials count:', error);
+      }
+    };
+    loadMaterialsCount();
   }, []);
 
   useEffect(() => {
@@ -128,8 +142,8 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
       case 'view':
         return {
           icon: 'fas fa-eye',
-          bgColor: 'bg-green-100',
-          textColor: 'text-green-600'
+          bgColor: 'bg-orange-100',
+          textColor: 'text-orange-600'
         };
       default:
         return {
@@ -147,7 +161,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
       event: 'bg-purple-100 text-purple-800',
       announcement: 'bg-yellow-100 text-yellow-800',
       competition: 'bg-red-100 text-red-800',
-      ceremony: 'bg-green-100 text-green-800',
+      ceremony: 'bg-orange-100 text-orange-800',
       workshop: 'bg-indigo-100 text-indigo-800',
       meeting: 'bg-gray-100 text-gray-800',
       exercise: 'bg-orange-100 text-orange-800',
@@ -172,7 +186,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'registered':
-        return 'bg-green-100 text-green-800';
+        return 'bg-orange-100 text-orange-800';
       case 'attended':
         return 'bg-blue-100 text-blue-800';
       case 'cancelled':
@@ -191,7 +205,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
   // Navigation tabs for student dashboard
   const navTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home' },
-    { id: 'materials', label: 'Learning Materials', icon: 'fas fa-book' },
+    { id: 'materials', label: 'PISPA Materials', icon: 'fas fa-book' },
     { id: 'activities', label: 'Activities', icon: 'fas fa-calendar' },
     { id: 'registrations', label: 'My Registrations', icon: 'fas fa-list-check' },
   ];
@@ -212,7 +226,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-600">Current Semester</div>
-            <div className="text-2xl font-bold text-green-600">{user.semester || 1}</div>
+            <div className="text-2xl font-bold text-orange-600">{user.semester || 1}</div>
           </div>
         </div>
       </div>
@@ -226,7 +240,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
               onClick={() => onViewChange(tab.id)}
               className={`${
                 activeView === tab.id
-                  ? 'border-green-500 text-green-600'
+                  ? 'border-orange-500 text-orange-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors`}
             >
@@ -244,13 +258,13 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <i className="fas fa-book text-green-600"></i>
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                  <i className="fas fa-book text-orange-600"></i>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Learning Materials</p>
-                <p className="text-2xl font-semibold text-gray-900">24</p>
+                <p className="text-sm font-medium text-gray-600">PISPA Materials</p>
+                <p className="text-2xl font-semibold text-gray-900">{materialsCount}</p>
               </div>
             </div>
           </div>
@@ -324,17 +338,17 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
 
       {activeView === 'materials' && (
         <div className="space-y-6">
-          {/* Learning Materials */}
+          {/* PISPA 1 */}
           <FileBrowser
             category="learning-materials"
-            title="Learning Materials"
+            title="PISPA 1"
             description="Access official APM learning materials and study resources for your PISPA training"
           />
 
-          {/* Drill & Marching Guides */}
+          {/* PISPA 2 */}
           <FileBrowser
             category="drill-guides"
-            title="Drill & Marching Guides"
+            title="PISPA 2"
             description="View drill instructions, marching techniques, and training demonstrations"
           />
         </div>
@@ -347,7 +361,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
       {activeView === 'registrations' && (
         <div className="space-y-6">
           {registrationsError && (
-            <div className="p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+            <div className="p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
               <div className="flex items-start gap-3">
                 <i className="fas fa-exclamation-triangle mt-0.5"></i>
                 <div>{registrationsError}</div>
@@ -357,7 +371,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
 
           {registrationsLoading ? (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Loading your registrations...</p>
             </div>
           ) : registrations.length === 0 ? (
@@ -373,8 +387,8 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <i className="fas fa-calendar-check text-green-600"></i>
+                      <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                        <i className="fas fa-calendar-check text-orange-600"></i>
                       </div>
                     </div>
                     <div className="ml-4">
@@ -494,7 +508,7 @@ export function StudentDashboard({ user, activeView, onViewChange }: StudentDash
                             )}
 
                             {!upcoming && registration.status === 'attended' && (
-                              <span className="text-xs text-green-600 font-medium">
+                              <span className="text-xs text-orange-600 font-medium">
                                 <i className="fas fa-check-circle mr-1"></i>
                                 Attended
                               </span>

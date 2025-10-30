@@ -97,7 +97,7 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
   const getFileCategoryColor = (category: FileCategory) => {
     switch (category) {
       case 'learning-materials': return 'bg-blue-100 text-blue-800';
-      case 'drill-guides': return 'bg-green-100 text-green-800';
+      case 'drill-guides': return 'bg-orange-100 text-orange-800';
       case 'activity-files': return 'bg-purple-100 text-purple-800';
       case 'profile-photos': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -109,7 +109,7 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
           <span className="ml-3 text-gray-600">Loading files...</span>
         </div>
       </div>
@@ -134,13 +134,13 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search files by name, description, or tags..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
           />
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-exclamation-triangle mt-0.5"></i>
             <div>{error}</div>
@@ -157,7 +157,7 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="mt-2 text-green-600 hover:text-green-800"
+              className="mt-2 text-orange-600 hover:text-orange-800"
             >
               Clear search
             </button>
@@ -213,7 +213,7 @@ export function FileBrowser({ category, title, description }: FileBrowserProps) 
                         {/* Download button */}
                         <button
                           onClick={() => handleDownload(file)}
-                          className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                          className="text-orange-600 hover:text-orange-800 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-orange-50 transition-colors"
                         >
                           <i className="fas fa-download"></i>
                           Download

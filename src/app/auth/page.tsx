@@ -65,12 +65,16 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Brand */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-gradient-to-br from-green-600 to-green-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-            <i className="fas fa-graduation-cap"></i>
+          <div className="w-20 h-20 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg">
+            <img
+              src="/assets/images/pispa-icon.jpeg"
+              alt="PISPA Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
           <h1 className="text-2xl font-medium text-gray-900 mb-1">PISPA Connect</h1>
           <p className="text-gray-600">Educational Platform for PISPA Students</p>
@@ -83,7 +87,7 @@ export default function AuthPage() {
               onClick={() => setMode('login')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 mode === 'login'
-                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  ? 'bg-orange-50 text-orange-700 border border-green-200'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -93,7 +97,7 @@ export default function AuthPage() {
               onClick={() => setMode('register')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 mode === 'register'
-                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  ? 'bg-orange-50 text-orange-700 border border-green-200'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -104,14 +108,14 @@ export default function AuthPage() {
 
         {/* Alerts */}
         {error && (
-          <div className="mb-6 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700 flex items-start gap-3">
+          <div className="mb-6 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700 flex items-start gap-3">
             <span className="alert-icon"><i className="fas fa-exclamation-triangle"></i></span>
             <div>{error}</div>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 rounded-lg border-l-4 border-green-500 bg-green-50 text-green-700 flex items-start gap-3">
+          <div className="mb-6 p-4 rounded-lg border-l-4 border-orange-500 bg-orange-50 text-orange-700 flex items-start gap-3">
             <span className="alert-icon"><i className="fas fa-check-circle"></i></span>
             <div>{success}</div>
           </div>
@@ -166,12 +170,12 @@ function LoginForm({ onSubmit, loading }: {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder=" "
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
               required
             />
             <label
               htmlFor="email"
-              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
             >
               Email Address
             </label>
@@ -187,12 +191,12 @@ function LoginForm({ onSubmit, loading }: {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder=" "
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
               required
             />
             <label
               htmlFor="password"
-              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
             >
               Password
             </label>
@@ -203,7 +207,7 @@ function LoginForm({ onSubmit, loading }: {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Signing in...' : 'Sign In'}
       </button>
@@ -304,12 +308,12 @@ function RegisterForm({
               value={formData.fullName}
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               placeholder=" "
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
               required
             />
             <label
               htmlFor="fullName"
-              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
             >
               Full Name
             </label>
@@ -325,12 +329,12 @@ function RegisterForm({
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder=" "
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
               required
             />
             <label
               htmlFor="email"
-              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
             >
               Email Address
             </label>
@@ -348,12 +352,12 @@ function RegisterForm({
                   value={formData.studentId || ''}
                   onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
                   placeholder=" "
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
                   required
                 />
                 <label
                   htmlFor="studentId"
-                  className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+                  className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
                 >
                   Student ID
                 </label>
@@ -369,11 +373,11 @@ function RegisterForm({
                   value={formData.programme || ''}
                   onChange={(e) => setFormData({ ...formData, programme: e.target.value })}
                   placeholder=" "
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
                 />
                 <label
                   htmlFor="programme"
-                  className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+                  className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
                 >
                   Programme (Optional)
                 </label>
@@ -392,12 +396,12 @@ function RegisterForm({
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder=" "
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
               required
             />
             <label
               htmlFor="password"
-              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
             >
               Password (min 6 characters)
             </label>
@@ -413,12 +417,12 @@ function RegisterForm({
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               placeholder=" "
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-colors peer text-gray-900"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-colors peer text-gray-900"
               required
             />
             <label
               htmlFor="confirmPassword"
-              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-green-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
+              className="absolute left-10 top-3 text-gray-600 text-sm transition-all duration-200 peer-focus:-top-2 peer-focus:bg-white peer-focus:px-1 peer-focus:text-orange-600 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
             >
               Confirm Password
             </label>
@@ -429,7 +433,7 @@ function RegisterForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Creating Account...' : 'Create Account'}
       </button>

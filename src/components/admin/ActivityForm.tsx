@@ -110,7 +110,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
       </h3>
 
       {error && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-500 bg-red-50 text-red-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-red-600 bg-red-50 text-red-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-exclamation-triangle mt-0.5"></i>
             <div>{error}</div>
@@ -119,7 +119,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
       )}
 
       {success && (
-        <div className="mb-4 p-4 rounded-lg border-l-4 border-green-500 bg-green-50 text-green-700">
+        <div className="mb-4 p-4 rounded-lg border-l-4 border-orange-500 bg-orange-50 text-orange-700">
           <div className="flex items-start gap-3">
             <i className="fas fa-check-circle mt-0.5"></i>
             <div>{success}</div>
@@ -137,7 +137,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
             type="text"
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
             placeholder="Enter activity title"
             disabled={loading}
           />
@@ -152,7 +152,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
             value={formData.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
             placeholder="Enter activity description"
             disabled={loading}
           />
@@ -167,7 +167,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
               id="activityType"
               value={formData.activityType}
               onChange={(e) => handleInputChange('activityType', e.target.value as ActivityType)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
               disabled={loading}
             >
               {activityTypes.map((type) => (
@@ -187,7 +187,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
               type="date"
               value={formData.date}
               onChange={(e) => handleInputChange('date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
               disabled={loading}
             />
           </div>
@@ -202,7 +202,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
             type="text"
             value={formData.location}
             onChange={(e) => handleInputChange('location', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-gray-900"
             placeholder="Enter location (optional)"
             disabled={loading}
           />
@@ -215,7 +215,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
               type="checkbox"
               checked={formData.isActive}
               onChange={(e) => handleInputChange('isActive', e.target.checked)}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
               disabled={loading}
             />
             <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
@@ -228,7 +228,7 @@ export function ActivityForm({ activity, onSuccess, onCancel }: ActivityFormProp
           <button
             type="submit"
             disabled={loading || !formData.title.trim() || !formData.description.trim() || !formData.date}
-            className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-orange-600 text-white py-2 px-4 rounded-md font-medium hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
