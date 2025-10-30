@@ -69,12 +69,24 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         {/* Logo and Brand */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-lg overflow-hidden shadow-lg">
-            <img
-              src="/assets/images/pispa-icon.jpeg"
-              alt="PISPA Logo"
-              className="w-full h-full object-cover"
-            />
+          <div className="flex justify-center items-center gap-10 mb-4">
+            {/* Politeknik Seberang Perai Logo */}
+            <div className="w-48 h-48">
+              <img
+                src="/assets/images/poli-seberang-perai.png"
+                alt="Politeknik Seberang Perai Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            {/* APM Logo */}
+            <div className="w-48 h-48">
+              <img
+                src="/assets/images/apmlogo.png"
+                alt="APM Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
           <h1 className="text-2xl font-medium text-gray-900 mb-1">PISPA Connect</h1>
           <p className="text-gray-600">Educational Platform for PISPA Students</p>
